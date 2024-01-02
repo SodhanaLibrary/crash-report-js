@@ -126,6 +126,12 @@ const clearTracks = () => {
   sessionStorage.removeItem('crash_report_tracks');
 };
 
+const getAllTracks = () => {
+  return JSON.parse(
+    sessionStorage.getItem('crash_report_tracks') || '[]'
+  );
+};
+
 const initTracks = (initInfo = {events: ['click', 'change', 'url', 'dblclick', 'contextmenu'], limit: 100}) => {
   const {events, limit} = initInfo;
   const mouseEvents = {
@@ -151,4 +157,4 @@ const initTracks = (initInfo = {events: ['click', 'change', 'url', 'dblclick', '
     });
 };
 
-export { initTracks, addTrack, clearTracks };
+export { initTracks, addTrack, getAllTracks, clearTracks };
