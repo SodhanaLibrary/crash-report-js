@@ -1,2 +1,2 @@
 # crash-report-js
-Tracks User's actions and API calls in frontend applications and logs create crash report
+Tracks User's actions, logs and API calls in frontend applications and then create crash report
