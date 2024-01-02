@@ -41,17 +41,20 @@ const generateXPathWithNearestParentId = (element) => {
     return null; // No parent with an ID found
 };
 
-const handleMouseEvent = type => event => {
+const handleMouseEvent = (type, limit) => event => {
   const tracks = JSON.parse(
     sessionStorage.getItem('crash_report_tracks') || '[]'
   );
   const target = generateXPathWithNearestParentId(event.target);
   const track = {
-    id: tracks.length + 1,
+    id: tracks[tracks.length - 1].id + 1,
     type,
     target,
     time: new Date(),
   };
+  if(tracks.length > limit + 1) {
+    tracks.shift();
+  }
   tracks.push(track);
   sessionStorage.setItem('crash_report_tracks', JSON.stringify(tracks));
 };
@@ -60,13 +63,13 @@ const addTrack = track => {
   const tracks = JSON.parse(
     sessionStorage.getItem('crash_report_tracks') || '[]'
   );
-  track.id = tracks.length + 1;
+  track.id = tracks[tracks.length - 1].id + 1;
   track.time = new Date();
   tracks.push(track);
   sessionStorage.setItem('crash_report_tracks', JSON.stringify(tracks));
 };
 
-const handleChange = event => {
+const handleChange = limit => event => {
   const tracks = JSON.parse(
     sessionStorage.getItem('crash_report_tracks') || '[]'
   );
@@ -74,12 +77,15 @@ const handleChange = event => {
     tracks && tracks.length ? tracks[tracks.length - 1] : null;
   const target = generateXPathWithNearestParentId(event.target);
   const track = {
-    id: tracks.length + 1,
+    id: tracks[tracks.length - 1].id + 1,
     type: 'change',
     target,
     value: event.target.value,
     time: new Date(),
   };
+  if(tracks.length > limit + 1) {
+    tracks.shift();
+  }
   if (
     prevCommand &&
     prevCommand.type === 'change' &&
@@ -91,7 +97,7 @@ const handleChange = event => {
   sessionStorage.setItem('crash_report_tracks', JSON.stringify(tracks));
 };
 
-const handleDocumentLoad = () => {
+const handleDocumentLoad = limit => () => {
   let oldHref = document.location.href;
   const body = document.querySelector('body');
   const observer = new MutationObserver(mutations => {
@@ -101,11 +107,14 @@ const handleDocumentLoad = () => {
         sessionStorage.getItem('crash_report_tracks') || '[]'
       );
       const track = {
-        id: tracks.length + 1,
+        id: tracks[tracks.length - 1].id + 1,
         type: 'url',
         value: oldHref,
         time: new Date(),
       };
+      if(tracks.length > limit + 1) {
+        tracks.shift();
+      }
       tracks.push(track);
       sessionStorage.setItem('crash_report_tracks', JSON.stringify(tracks));
     }
@@ -117,25 +126,25 @@ const clearTracks = () => {
   sessionStorage.removeItem('crash_report_tracks');
 };
 
-const initTracks = (initInfo = {events: ['click', 'change', 'url', 'dblclick', 'contextmenu']}) => {
+const initTracks = (initInfo = {events: ['click', 'change', 'url', 'dblclick', 'contextmenu'], limit: 100}) => {
+  const {events, limit} = initInfo;
   const mouseEvents = {
-      click: handleMouseEvent('click'),
-      contextmenu: handleMouseEvent('contextmenu'),
-      dblclick: handleMouseEvent('dblclick'),
-      mousedown: handleMouseEvent('mousedown'),
-      mouseenter: handleMouseEvent('mouseenter'),
-      mouseleave: handleMouseEvent('mouseleave'),
-      mousemove: handleMouseEvent('mousemove'),
-      mouseout: handleMouseEvent('mouseout'),
-      mouseover: handleMouseEvent('mouseover'),
-      mouseup: handleMouseEvent('mouseup'),
+      click: handleMouseEvent('click', limit),
+      contextmenu: handleMouseEvent('contextmenu', limit),
+      dblclick: handleMouseEvent('dblclick', limit),
+      mousedown: handleMouseEvent('mousedown', limit),
+      mouseenter: handleMouseEvent('mouseenter', limit),
+      mouseleave: handleMouseEvent('mouseleave', limit),
+      mousemove: handleMouseEvent('mousemove', limit),
+      mouseout: handleMouseEvent('mouseout', limit),
+      mouseover: handleMouseEvent('mouseover', limit),
+      mouseup: handleMouseEvent('mouseup', limit),
     };
-    const {events} = initInfo;
     events.forEach(e => {
       if(e === 'url') {
-        window.onload = handleDocumentLoad;
+        window.onload = handleDocumentLoad(limit);
       } else if (e === 'change') {
-        document.addEventListener('input', handleChange);
+        document.addEventListener('input', handleChange(limit));
       } else {
         document.addEventListener(e, mouseEvents[e]);
       }
