@@ -47,7 +47,7 @@ const handleMouseEvent = (type, limit) => event => {
   );
   const target = generateXPathWithNearestParentId(event.target);
   const track = {
-    id: tracks[tracks.length - 1].id + 1,
+    id: tracks.length ? tracks[tracks.length - 1].id + 1 : 1,
     type,
     target,
     time: new Date(),
@@ -63,7 +63,7 @@ const addTrack = track => {
   const tracks = JSON.parse(
     sessionStorage.getItem('crash_report_tracks') || '[]'
   );
-  track.id = tracks[tracks.length - 1].id + 1;
+  track.id = tracks.length ? tracks[tracks.length - 1].id + 1 : 1;
   track.time = new Date();
   tracks.push(track);
   sessionStorage.setItem('crash_report_tracks', JSON.stringify(tracks));
@@ -77,7 +77,7 @@ const handleChange = limit => event => {
     tracks && tracks.length ? tracks[tracks.length - 1] : null;
   const target = generateXPathWithNearestParentId(event.target);
   const track = {
-    id: tracks[tracks.length - 1].id + 1,
+    id: tracks.length ? tracks[tracks.length - 1].id + 1 : 1,
     type: 'change',
     target,
     value: event.target.value,
@@ -107,7 +107,7 @@ const handleDocumentLoad = limit => () => {
         sessionStorage.getItem('crash_report_tracks') || '[]'
       );
       const track = {
-        id: tracks[tracks.length - 1].id + 1,
+        id: tracks.length ? tracks[tracks.length - 1].id + 1 : 1,
         type: 'url',
         value: oldHref,
         time: new Date(),
